@@ -2,6 +2,5 @@ node_modules/
 dist/
 src/buildInfo.ts
 .DS_Store
-latest-build.zip
 *.har
 har-file-examples/

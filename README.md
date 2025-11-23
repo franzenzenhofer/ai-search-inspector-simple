@@ -1,6 +1,8 @@
 # AI Search Inspector
 
-A Chrome extension that inspects and displays ChatGPT outbound search queries and their returned results in a compact side panel.
+A Chrome extension that inspects and displays **ChatGPT** outbound search queries and their returned results in a compact side panel.
+
+> **Currently supports:** ChatGPT (chat.openai.com and chatgpt.com)
 
 ## Features
 
