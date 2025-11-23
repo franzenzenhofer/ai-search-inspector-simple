@@ -1,0 +1,25 @@
+{
+  "name": "AI Search Inspector Simple",
+  "description": "Inspect ChatGPT outbound search queries and their returned results in a compact side panel.",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_title": "AI Search Inspector Simple"
+  },
+  "permissions": ["storage", "tabs", "scripting", "webRequest", "sidePanel", "debugger"],
+  "host_permissions": ["https://chat.openai.com/*", "https://chatgpt.com/*", "https://*.openai.com/*"],
+  "background": {
+    "service_worker": "serviceWorker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  }
+}
