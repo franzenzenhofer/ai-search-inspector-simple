@@ -64,73 +64,45 @@
 
     /* Tutorial Styles */
     .tutorial {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #ffffff;
-      padding: 20px;
+      padding: 16px;
       margin: 0 0 16px 0;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
     }
     .tutorial-header {
-      text-align: center;
-      margin-bottom: 20px;
-      border-bottom: 2px solid rgba(255,255,255,0.3);
-      padding-bottom: 12px;
-    }
-    .tutorial-icon {
-      font-size: 32px;
-      display: block;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #d1d5db;
     }
     .tutorial-header h2 {
       margin: 0;
-      font-size: 16px;
+      font-size: 11px;
       font-weight: 700;
-      color: #ffffff;
+      color: #2563eb;
     }
     .tutorial-steps {
-      margin-top: 16px;
+      margin-top: 12px;
     }
     .tutorial-step {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-      padding: 12px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      border-left: 4px solid #fff;
+      margin-bottom: 10px;
+      padding: 8px;
+      background: #fff;
+      border-left: 3px solid #2563eb;
     }
     .tutorial-step:last-child {
       margin-bottom: 0;
     }
-    .step-green { border-left-color: #10b981; background: rgba(16,185,129,0.15); }
-    .step-yellow { border-left-color: #f59e0b; background: rgba(245,158,11,0.15); }
-    .step-blue { border-left-color: #3b82f6; background: rgba(59,130,246,0.15); }
-    .step-purple { border-left-color: #a78bfa; background: rgba(167,139,250,0.15); }
     .step-number {
-      font-size: 24px;
       font-weight: 700;
-      min-width: 32px;
-      flex-shrink: 0;
+      color: #2563eb;
+      font-size: 10px;
     }
-    .step-content {
-      flex: 1;
-    }
-    .step-content strong {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 6px;
-      font-weight: 700;
-    }
-    .step-detail {
-      font-size: 11px;
-      line-height: 1.5;
-      opacity: 0.95;
-    }
-    .step-arrow {
-      display: inline-block;
-      margin-right: 4px;
-      color: #fbbf24;
+    .step-text {
+      font-size: 10px;
+      line-height: 1.4;
+      color: #333;
+      margin-top: 2px;
     }
   </style>
 </head>
@@ -143,55 +115,27 @@
   <!-- Tutorial (shown when no results) -->
   <div id="tutorial" class="tutorial hidden">
     <div class="tutorial-header">
-      <span class="tutorial-icon">🔍</span>
-      <h2>Getting Started with AI Search Inspector</h2>
+      <h2>How to use:</h2>
     </div>
     <div class="tutorial-steps">
-      <div class="tutorial-step step-green">
-        <div class="step-number">➊</div>
-        <div class="step-content">
-          <strong>🟢 GO TO CHATGPT</strong>
-          <div class="step-detail">
-            <span class="step-arrow">└─→</span>Open ChatGPT (chat.openai.com or chatgpt.com)<br>
-            <span class="step-arrow">└─→</span>Ask a question that requires web search<br>
-            <span class="step-arrow">└─→</span>Example: "What are the latest AI developments?"
-          </div>
-        </div>
+      <div class="tutorial-step">
+        <div class="step-number">1. Go to ChatGPT and ask a question</div>
+        <div class="step-text">Ask something that requires web search</div>
       </div>
 
-      <div class="tutorial-step step-yellow">
-        <div class="step-number">➋</div>
-        <div class="step-content">
-          <strong>🟡 WAIT FOR RESPONSE</strong>
-          <div class="step-detail">
-            <span class="step-arrow">└─→</span>Let ChatGPT finish its response completely<br>
-            <span class="step-arrow">└─→</span>The extension monitors searches in real-time
-          </div>
-        </div>
+      <div class="tutorial-step">
+        <div class="step-number">2. Wait for ChatGPT to respond</div>
+        <div class="step-text">Let it finish completely</div>
       </div>
 
-      <div class="tutorial-step step-blue">
-        <div class="step-number">➌</div>
-        <div class="step-content">
-          <strong>🔵 CLICK "HARD REFRESH"</strong>
-          <div class="step-detail">
-            <span class="step-arrow">└─→</span>Button is at the top of this panel ↑<br>
-            <span class="step-arrow">└─→</span><strong>Why?</strong> Captures searches made before panel opened<br>
-            <span class="step-arrow">└─→</span>ChatGPT needs to reload to enable monitoring
-          </div>
-        </div>
+      <div class="tutorial-step">
+        <div class="step-number">3. Click "Hard refresh" above</div>
+        <div class="step-text">Reloads ChatGPT to enable monitoring</div>
       </div>
 
-      <div class="tutorial-step step-purple">
-        <div class="step-number">➍</div>
-        <div class="step-content">
-          <strong>🟣 INSPECT RESULTS</strong>
-          <div class="step-detail">
-            <span class="step-arrow">└─→</span>View captured queries & results below<br>
-            <span class="step-arrow">└─→</span>Click results to expand details<br>
-            <span class="step-arrow">└─→</span>Use "Copy" to save individual or all data
-          </div>
-        </div>
+      <div class="tutorial-step">
+        <div class="step-number">4. View results below</div>
+        <div class="step-text">Search queries and results will appear here</div>
       </div>
     </div>
   </div>
