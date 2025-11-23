@@ -1,4 +1,4 @@
-# AI Search Inspector
+# AI Search Inspector by Franz Enzenhofer
 
 A Chrome extension that inspects and displays **ChatGPT** outbound search queries and their returned results in a compact side panel.
 
@@ -36,7 +36,7 @@ A Chrome extension that inspects and displays **ChatGPT** outbound search querie
 
 5. **Verify Installation**
    - The extension should now appear in your extensions list
-   - You should see "AI Search Inspector" with version 0.1.0
+   - You should see "AI Search Inspector by Franz Enzenhofer" with version 0.1.0
 
 ### Option 2: Build from Source
 
