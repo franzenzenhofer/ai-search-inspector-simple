@@ -132,6 +132,9 @@ const renderTableOfContents = (allSummaryEvents: SummaryEvent[]): void => {
         </div>
       `;
     }).join("")}
+    <div class="toc-event">
+      <a href="#full-json" class="toc-event-link">Full JSON</a>
+    </div>
   `;
 
   tocContainer.innerHTML = tocHtml;
@@ -177,7 +180,7 @@ const renderRawResponses = (events: SearchEvent[]): void => {
 
   const escapeHtml = (text: string): string => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 
-  rawContainer.innerHTML = events.map((e, idx) => {
+  const itemsHtml = events.map((e, idx) => {
     const jsonContent = e.rawResponse || "No response data";
     const formattedJson = formatJson(jsonContent);
 
@@ -193,6 +196,11 @@ const renderRawResponses = (events: SearchEvent[]): void => {
       </div>
     `;
   }).join("");
+
+  rawContainer.innerHTML = `
+    <h2 id="full-json" style="margin:0 0 16px; font-size:14px; font-weight:700; color:#2563eb;">Full JSON</h2>
+    ${itemsHtml}
+  `;
 };
 
 const applyState = (events: SearchEvent[], _logs: LogEntry[]): void => {
