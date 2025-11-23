@@ -331,3 +331,17 @@ chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "state-updated")
     applyState(message.events as SearchEvent[], message.logs as LogEntry[]);
 });
+
+// Notify service worker that panel has opened (attach debugger)
+chrome.runtime.sendMessage({ type: "panel-opened" }, (response) => {
+  if (chrome.runtime.lastError) {
+    console.warn("Failed to notify panel opened:", chrome.runtime.lastError.message);
+  } else {
+    console.log("Panel opened, debugger attaching");
+  }
+});
+
+// Notify service worker when panel closes (detach debugger)
+window.addEventListener("beforeunload", () => {
+  chrome.runtime.sendMessage({ type: "panel-closed" });
+});

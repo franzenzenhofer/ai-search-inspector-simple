@@ -8,6 +8,7 @@ const targets = ["/backend-api/conversation", "process_upload_stream"];
 const requests = new Map<string, RequestInfo>();
 let attachedTabId: number | undefined;
 let listener: ((source: chrome.debugger.Debuggee, method: string, params?: object) => void) | undefined;
+let storedCallback: ((event: SearchEvent) => void) | undefined;
 
 const isTarget = (url?: string): boolean => Boolean(url && targets.some((needle) => url.includes(needle)));
 const decodeBody = (result?: { body?: string; base64Encoded?: boolean }): string | undefined => (!result?.body ? undefined : result.base64Encoded ? atob(result.body) : result.body);
@@ -62,9 +63,31 @@ const maybeAttach = async (onEvent: (event: SearchEvent) => void): Promise<void>
   const id = await findChatTab();
   if (id && id !== attachedTabId) attachToTab(id, onEvent);
 };
+export const attachDebugger = (): void => {
+  if (!storedCallback) {
+    addLog("warn", "capture", "attachDebugger called but no callback stored");
+    return;
+  }
+  void maybeAttach(storedCallback);
+  addLog("info", "capture", "debugger attach requested (panel opened)");
+};
+export const detachDebugger = (): void => {
+  if (attachedTabId) {
+    chrome.debugger.detach({ tabId: attachedTabId }, () => {
+      const err = chrome.runtime.lastError;
+      if (err) addLog("warn", "capture", "debugger detach failed", { message: err.message });
+      else addLog("info", "capture", "debugger detached (panel closed)", { tabId: attachedTabId });
+    });
+    attachedTabId = undefined;
+    requests.clear();
+  }
+};
 export const effectInitDebuggerTap = (onEvent: (event: SearchEvent) => void): void => {
-  void maybeAttach(onEvent);
-  chrome.tabs.onActivated.addListener(() => { void maybeAttach(onEvent); });
-  chrome.tabs.onUpdated.addListener((_id, changeInfo, tab) => { if (changeInfo.status === "complete" && isTarget(tab.url)) void maybeAttach(onEvent); });
-  chrome.debugger.onDetach.addListener(() => { attachedTabId = undefined; requests.clear(); });
+  storedCallback = onEvent;
+  // DO NOT auto-attach here - wait for panel to open
+  // Set up tab event listeners (will only attach if panel is open)
+  chrome.tabs.onActivated.addListener(() => { if (attachedTabId) void maybeAttach(onEvent); });
+  chrome.tabs.onUpdated.addListener((_id, changeInfo, tab) => { if (attachedTabId && changeInfo.status === "complete" && isTarget(tab.url)) void maybeAttach(onEvent); });
+  chrome.debugger.onDetach.addListener(() => { attachedTabId = undefined; requests.clear(); addLog("info", "capture", "debugger detached by external event"); });
+  addLog("info", "capture", "debugger tap initialized (not attached yet)");
 };
