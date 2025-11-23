@@ -147,9 +147,25 @@ The extension requires the following permissions:
 
 ## Privacy
 
-- All data is stored locally in your browser
-- No data is sent to external servers
-- Data is cleared when you clear Chrome extension storage
+**WE COLLECT NOTHING.**
+
+This extension does NOT collect, transmit, or store any of your personal data:
+
+- ❌ **No data collection** - We don't collect any user data
+- ❌ **No external servers** - We have no servers, no backend, no database
+- ❌ **No analytics** - No tracking, no telemetry, no usage statistics
+- ❌ **No third parties** - No data shared with anyone, ever
+- ✅ **100% local** - All captured search data stays on YOUR device only
+
+**What happens to the data this extension captures?**
+
+When you use this extension, ChatGPT's search queries and results are captured and stored in **your local browser storage only**. This data:
+- Never leaves your computer
+- Is not transmitted anywhere
+- Is not accessible to us (the developers)
+- Can be cleared anytime through Chrome's extension settings
+
+**Full Privacy Policy:** [PRIVACY_POLICY.md](./PRIVACY_POLICY.md)
 
 ## Troubleshooting
 

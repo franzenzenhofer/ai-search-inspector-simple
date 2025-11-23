@@ -9,7 +9,7 @@
     "build:sw": "esbuild src/infra/effectServiceWorker.ts --bundle --outfile=dist/serviceWorker.js --platform=browser --target=chrome115 --format=esm",
     "build:content": "esbuild src/infra/effectContentWatcher.ts --bundle --outfile=dist/content.js --platform=browser --target=chrome115 --format=esm",
     "build:panel": "esbuild src/ui/panel.ts --bundle --outfile=dist/panel.js --platform=browser --target=chrome115 --format=esm",
-    "copy": "cp manifest.json dist/ && cp sidepanel.html dist/",
+    "copy": "cp manifest.json dist/ && cp sidepanel.html dist/ && cp icon*.png dist/",
     "zip": "cd dist && zip -r ../latest-build.zip . && cd ..",
     "build": "npm run clean && npm run clean:zip && npm run build:sw && npm run build:content && npm run build:panel && npm run copy && npm run zip",
     "lint": "eslint \"src/**/*.ts\"",
