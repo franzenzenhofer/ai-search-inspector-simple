@@ -61,6 +61,77 @@
     .raw-response pre { background:#f7f7f7; padding:8px; overflow:auto; max-height:400px; font-size:9px; border:1px solid #ddd; border-radius:2px; white-space:pre-wrap; word-break:break-all; margin:0; overflow-wrap:break-word; }
     .copy-btn { padding:3px 8px; font-size:10px; border:1px solid #ccc; background:#fff; cursor:pointer; border-radius:2px; }
     .copy-btn:hover { background:#e0e0e0; }
+
+    /* Tutorial Styles */
+    .tutorial {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      padding: 20px;
+      margin: 0 0 16px 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .tutorial-header {
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid rgba(255,255,255,0.3);
+      padding-bottom: 12px;
+    }
+    .tutorial-icon {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .tutorial-header h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .tutorial-steps {
+      margin-top: 16px;
+    }
+    .tutorial-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      border-left: 4px solid #fff;
+    }
+    .tutorial-step:last-child {
+      margin-bottom: 0;
+    }
+    .step-green { border-left-color: #10b981; background: rgba(16,185,129,0.15); }
+    .step-yellow { border-left-color: #f59e0b; background: rgba(245,158,11,0.15); }
+    .step-blue { border-left-color: #3b82f6; background: rgba(59,130,246,0.15); }
+    .step-purple { border-left-color: #a78bfa; background: rgba(167,139,250,0.15); }
+    .step-number {
+      font-size: 24px;
+      font-weight: 700;
+      min-width: 32px;
+      flex-shrink: 0;
+    }
+    .step-content {
+      flex: 1;
+    }
+    .step-content strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .step-detail {
+      font-size: 11px;
+      line-height: 1.5;
+      opacity: 0.95;
+    }
+    .step-arrow {
+      display: inline-block;
+      margin-right: 4px;
+      color: #fbbf24;
+    }
   </style>
 </head>
 <body>
@@ -68,6 +139,63 @@
   <button id="hard-reload" class="primary">Hard refresh</button>
   <button id="clear-data" class="primary" style="background:#dc2626; border-color:#b91c1c;">Clear data</button>
   <button id="copy-all" class="copy-all-btn">Copy All</button>
+
+  <!-- Tutorial (shown when no results) -->
+  <div id="tutorial" class="tutorial hidden">
+    <div class="tutorial-header">
+      <span class="tutorial-icon">🔍</span>
+      <h2>Getting Started with AI Search Inspector</h2>
+    </div>
+    <div class="tutorial-steps">
+      <div class="tutorial-step step-green">
+        <div class="step-number">➊</div>
+        <div class="step-content">
+          <strong>🟢 GO TO CHATGPT</strong>
+          <div class="step-detail">
+            <span class="step-arrow">└─→</span>Open ChatGPT (chat.openai.com or chatgpt.com)<br>
+            <span class="step-arrow">└─→</span>Ask a question that requires web search<br>
+            <span class="step-arrow">└─→</span>Example: "What are the latest AI developments?"
+          </div>
+        </div>
+      </div>
+
+      <div class="tutorial-step step-yellow">
+        <div class="step-number">➋</div>
+        <div class="step-content">
+          <strong>🟡 WAIT FOR RESPONSE</strong>
+          <div class="step-detail">
+            <span class="step-arrow">└─→</span>Let ChatGPT finish its response completely<br>
+            <span class="step-arrow">└─→</span>The extension monitors searches in real-time
+          </div>
+        </div>
+      </div>
+
+      <div class="tutorial-step step-blue">
+        <div class="step-number">➌</div>
+        <div class="step-content">
+          <strong>🔵 CLICK "HARD REFRESH"</strong>
+          <div class="step-detail">
+            <span class="step-arrow">└─→</span>Button is at the top of this panel ↑<br>
+            <span class="step-arrow">└─→</span><strong>Why?</strong> Captures searches made before panel opened<br>
+            <span class="step-arrow">└─→</span>ChatGPT needs to reload to enable monitoring
+          </div>
+        </div>
+      </div>
+
+      <div class="tutorial-step step-purple">
+        <div class="step-number">➍</div>
+        <div class="step-content">
+          <strong>🟣 INSPECT RESULTS</strong>
+          <div class="step-detail">
+            <span class="step-arrow">└─→</span>View captured queries & results below<br>
+            <span class="step-arrow">└─→</span>Click results to expand details<br>
+            <span class="step-arrow">└─→</span>Use "Copy" to save individual or all data
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toc-container" class="toc-container"></div>
   <div id="structured-container" class="structured-container" aria-label="Structured search results"></div>
   <div id="raw-container" class="raw-container" aria-label="Raw JSON responses"></div>
