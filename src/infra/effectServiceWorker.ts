@@ -1,7 +1,7 @@
 import { SearchEvent } from "../core/types";
 import { effectInitWebRequestTap } from "./effectWebRequestTap";
 import { effectInitSidePanel } from "./effectSidePanel";
-import { effectInitDebuggerTap } from "./effectDebuggerTap";
+import { effectInitDebuggerTap, attachDebugger, detachDebugger } from "./effectDebuggerTap";
 import { addLog, clearLogs, getLogs, hydrateLogs } from "../logs/logStore";
 const EVENT_KEY = "search-events", LOG_KEY = "logs";
 const loadState = async (): Promise<{ events: SearchEvent[] }> => {
@@ -61,6 +61,18 @@ const handleGetState = (sendResponse: (response: unknown) => void): boolean => {
 const handleReload = (sendResponse: (response: unknown) => void): boolean => { void reloadChatTab().then(() => sendResponse({ ok: true })); return true; };
 const handleClearLogs = (sendResponse: (response: unknown) => void): boolean => { void clearLogState().then(() => sendResponse({ ok: true })); return true; };
 const handleClearAllData = (sendResponse: (response: unknown) => void): boolean => { void clearAllData().then(() => sendResponse({ ok: true })); return true; };
+const handlePanelOpened = (sendResponse: (response: unknown) => void): boolean => {
+  addLog("info", "ui", "side panel opened, attaching debugger");
+  attachDebugger();
+  sendResponse({ ok: true });
+  return true;
+};
+const handlePanelClosed = (sendResponse: (response: unknown) => void): boolean => {
+  addLog("info", "ui", "side panel closed, detaching debugger");
+  detachDebugger();
+  sendResponse({ ok: true });
+  return true;
+};
 const handleMessage = (message: unknown, sendResponse: (response: unknown) => void): boolean => {
   const typed = message as { type?: string; event?: SearchEvent };
   if (typed.type === "search-event") return handleSearchEvent(typed.event as SearchEvent, sendResponse);
@@ -68,6 +80,8 @@ const handleMessage = (message: unknown, sendResponse: (response: unknown) => vo
   if (typed.type === "reload-detection") return handleReload(sendResponse);
   if (typed.type === "clear-log") return handleClearLogs(sendResponse);
   if (typed.type === "clear-all-data") return handleClearAllData(sendResponse);
+  if (typed.type === "panel-opened") return handlePanelOpened(sendResponse);
+  if (typed.type === "panel-closed") return handlePanelClosed(sendResponse);
   return false;
 };
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => handleMessage(message, sendResponse));
