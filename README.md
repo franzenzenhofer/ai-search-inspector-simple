@@ -46,7 +46,7 @@ A Chrome extension that inspects and displays ChatGPT outbound search queries an
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/ai-search-inspector-simple.git
+   git clone https://github.com/franzenzenhofer/ai-search-inspector-simple.git
    cd ai-search-inspector-simple
    ```
 

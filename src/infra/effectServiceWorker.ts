@@ -42,6 +42,12 @@ const clearLogState = async (): Promise<void> => {
   await persist(events);
   notifyPanels(events);
 };
+const clearAllData = async (): Promise<void> => {
+  clearLogs();
+  await persist([]);
+  notifyPanels([]);
+  addLog("info", "capture", "all data cleared");
+};
 const handleSearchEvent = (event: SearchEvent | undefined, sendResponse: (response: unknown) => void): boolean => {
   if (!event) return false;
   void upsertEvent(event);
@@ -54,12 +60,14 @@ const handleGetState = (sendResponse: (response: unknown) => void): boolean => {
 };
 const handleReload = (sendResponse: (response: unknown) => void): boolean => { void reloadChatTab().then(() => sendResponse({ ok: true })); return true; };
 const handleClearLogs = (sendResponse: (response: unknown) => void): boolean => { void clearLogState().then(() => sendResponse({ ok: true })); return true; };
+const handleClearAllData = (sendResponse: (response: unknown) => void): boolean => { void clearAllData().then(() => sendResponse({ ok: true })); return true; };
 const handleMessage = (message: unknown, sendResponse: (response: unknown) => void): boolean => {
   const typed = message as { type?: string; event?: SearchEvent };
   if (typed.type === "search-event") return handleSearchEvent(typed.event as SearchEvent, sendResponse);
   if (typed.type === "get-state") return handleGetState(sendResponse);
   if (typed.type === "reload-detection") return handleReload(sendResponse);
   if (typed.type === "clear-log") return handleClearLogs(sendResponse);
+  if (typed.type === "clear-all-data") return handleClearAllData(sendResponse);
   return false;
 };
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => handleMessage(message, sendResponse));

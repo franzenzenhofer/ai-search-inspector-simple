@@ -112,17 +112,22 @@ const renderTableOfContents = (allSummaryEvents: SummaryEvent[]): void => {
     return;
   }
 
+  // Calculate total queries and results
+  const totalQueries = allSummaryEvents.reduce((sum, event) => sum + event.queries.length, 0);
+  const totalResults = allSummaryEvents.reduce((sum, event) =>
+    sum + event.queries.reduce((qSum, q) => qSum + q.results.length, 0), 0);
+
   const tocHtml = `
-    <div class="toc-title">Table of Contents</div>
+    <div class="toc-title">Table of Contents (${totalQueries} ${totalQueries === 1 ? 'query' : 'queries'}, ${totalResults} results)</div>
     ${allSummaryEvents.map((summaryEvent, eventIdx) => {
-      const totalResults = summaryEvent.queries.reduce((sum, q) => sum + q.results.length, 0);
+      const eventResults = summaryEvent.queries.reduce((sum, q) => sum + q.results.length, 0);
       const queriesHtml = summaryEvent.queries.map((query, queryIdx) => {
         return `<a href="#query-${eventIdx}-${queryIdx}" class="toc-query-link">${eventIdx + 1}.${queryIdx + 1} ${query.query} (${query.results.length})</a>`;
       }).join("");
 
       return `
         <div class="toc-event">
-          <a href="#event-${eventIdx}" class="toc-event-link">Event #${eventIdx + 1} (${summaryEvent.queries.length} ${summaryEvent.queries.length === 1 ? 'query' : 'queries'}, ${totalResults} results)</a>
+          <a href="#event-${eventIdx}" class="toc-event-link">Event #${eventIdx + 1} (${summaryEvent.queries.length} ${summaryEvent.queries.length === 1 ? 'query' : 'queries'}, ${eventResults} results)</a>
           <div class="toc-queries">${queriesHtml}</div>
         </div>
       `;
@@ -238,9 +243,21 @@ const setupEventDelegation = (): void => {
 };
 
 const wireControls = (): void => {
+  onClick("clear-data", () => {
+    if (confirm("Are you sure you want to clear all collected data? This cannot be undone.")) {
+      chrome.runtime.sendMessage({ type: "clear-all-data" }).then(() => {
+        window.location.reload();
+      });
+    }
+  });
+
   onClick("hard-reload", () => {
+    // Automatically clear data before reload to collect fresh data
+    void chrome.runtime.sendMessage({ type: "clear-all-data" });
     void chrome.runtime.sendMessage({ type: "reload-detection" });
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   });
 
   onClick("copy-all", () => {
