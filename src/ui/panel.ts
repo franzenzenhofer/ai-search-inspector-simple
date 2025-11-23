@@ -206,6 +206,16 @@ const renderRawResponses = (events: SearchEvent[]): void => {
 const applyState = (events: SearchEvent[], _logs: LogEntry[]): void => {
   renderStructuredView(events);
   renderRawResponses(events);
+
+  // Show tutorial when no results, hide when results exist
+  const tutorial = document.getElementById("tutorial");
+  if (tutorial) {
+    if (events.length === 0) {
+      tutorial.classList.remove("hidden");
+    } else {
+      tutorial.classList.add("hidden");
+    }
+  }
 };
 
 const requestState = async (): Promise<void> =>
