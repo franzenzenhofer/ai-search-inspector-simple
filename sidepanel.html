@@ -4,145 +4,528 @@
   <meta charset="UTF-8">
   <title>AI Search Inspector</title>
   <style>
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --text: #202124;
+      --muted: #5f6368;
+      --link: #1a0dab;
+      --blue: #1a73e8;
+      --line: #dadce0;
+      --surface: #f8f9fa;
+      --pill: #e8eaed;
+      --green: #0b8043;
+    }
+
     * { box-sizing: border-box; }
-    body { margin:0; padding:12px; background:#fff; color:#111; font:12px/1.4 "Roboto Mono", monospace; max-width:100%; overflow-x:hidden; }
-    h1 { margin:0 0 8px; font-size:13px; word-wrap:break-word; }
-    button { margin-right:6px; padding:4px 8px; background:#f4f4f4; color:#111; border:1px solid #ccc; cursor:pointer; }
-    button:focus { outline:1px solid #1a73e8; }
-    .primary { width:100%; margin-bottom:10px; padding:10px 12px; background:#2563eb; color:#fff; border-color:#1d4ed8; font-weight:600; }
-    .copy-all-btn { width:100%; margin-bottom:10px; padding:8px 12px; background:#10b981; color:#fff; border:1px solid #059669; font-weight:600; cursor:pointer; }
-    .copy-all-btn:hover { background:#059669; }
+
+    body {
+      margin: 0;
+      background: #fff;
+      color: var(--text);
+      font: 13px/1.6 var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 24px 48px;
+      word-break: break-word;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: -0.2px;
+      color: var(--text);
+    }
+
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .brand-credit {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    button {
+      margin: 0;
+      padding: 6px 12px;
+      background: #f8f9fa;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      cursor: pointer;
+      font: 12px/1.4 var(--font-sans);
+      transition: background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    }
+
+    button:hover {
+      background: #dfe1e5;
+      border-color: #c4c7c5;
+    }
+
+    button:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #e8f0fe;
+    }
+
+    .primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+    }
+
+    .primary:hover {
+      background: #1765cc;
+      border-color: #1765cc;
+    }
+
+    .destructive {
+      background: #fce8e6;
+      border-color: #f28b82;
+      color: #c5221f;
+      box-shadow: none;
+    }
+
+    .destructive:hover {
+      background: #f9d3ce;
+      border-color: #f28b82;
+    }
+
+    .copy-all-btn {
+      background: var(--pill);
+      border-color: var(--line);
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .copy-all-btn:hover {
+      background: #dfe1e5;
+    }
 
     /* Table of Contents */
-    .toc-container { margin-bottom:16px; padding:10px; background:#f9fafb; border:1px solid #d1d5db; border-radius:4px; max-width:100%; overflow-wrap:break-word; }
-    .toc-title { font-weight:700; margin-bottom:8px; color:#111; font-size:11px; }
-    .toc-event { margin-bottom:6px; word-wrap:break-word; }
-    .toc-event-link { color:#2563eb; text-decoration:none; font-weight:600; font-size:10px; word-wrap:break-word; }
-    .toc-event-link:hover { text-decoration:underline; }
-    .toc-queries { margin-left:16px; margin-top:4px; }
-    .toc-query-link { color:#1d4ed8; text-decoration:none; font-size:9px; display:block; margin-bottom:2px; word-wrap:break-word; }
-    .toc-query-link:hover { text-decoration:underline; }
+    .toc-container {
+      margin: 12px 0 16px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
 
-    /* Structured View Styles */
-    .structured-container { margin-top:12px; margin-bottom:20px; padding-bottom:20px; border-bottom:2px solid #2563eb; max-width:100%; overflow-wrap:break-word; }
-    .no-data { padding:20px; text-align:center; color:#999; }
-    .event-card { margin-bottom:16px; padding:10px; border:1px solid #2563eb; border-radius:4px; background:#f0f7ff; max-width:100%; overflow-wrap:break-word; }
-    .event-header { font-weight:700; margin-bottom:12px; color:#1d4ed8; font-size:11px; word-wrap:break-word; }
-    .event-meta { font-weight:400; color:#666; font-size:10px; word-wrap:break-word; }
-    .query-section { margin-bottom:12px; margin-left:8px; max-width:100%; overflow-wrap:break-word; }
-    .query-header { font-weight:600; margin-bottom:8px; color:#1d4ed8; font-size:10px; word-wrap:break-word; }
-    .search-btn { display:inline-block; margin-left:6px; padding:2px 6px; background:#e0e0e0; color:#333; text-decoration:none; border-radius:2px; font-size:8px; font-weight:400; }
-    .search-btn:hover { background:#d0d0d0; }
-    .query-results { margin-left:10px; max-width:100%; }
-    .result-item { margin:8px 0; padding:8px; border-left:3px solid #2563eb; background:#fff; display:flex; gap:8px; max-width:100%; }
-    .result-number { font-weight:700; color:#2563eb; min-width:20px; flex-shrink:0; }
-    .result-content { flex:1; min-width:0; overflow-wrap:break-word; }
-    .result-title { font-weight:600; margin-bottom:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; word-wrap:break-word; }
-    .result-title a { color:#1a73e8; text-decoration:none; word-wrap:break-word; overflow-wrap:break-word; }
-    .result-title a:hover { text-decoration:underline; }
-    .result-url { font-size:9px; color:#0a5c0a; margin-bottom:4px; word-break:break-all; font-family:monospace; overflow-wrap:break-word; }
-    .result-snippet { font-size:11px; color:#333; line-height:1.4; margin-bottom:4px; white-space:pre-wrap; word-wrap:break-word; overflow-wrap:break-word; }
-    .result-metadata { font-size:9px; color:#666; margin-bottom:4px; word-wrap:break-word; max-width:100%; overflow-wrap:break-word; }
-    .meta-item { margin-right:12px; display:inline-block; word-wrap:break-word; word-break:break-all; overflow-wrap:break-word; max-width:100%; }
-    .result-actions { margin-top:4px; }
-    .toggle-btn { padding:2px 6px; font-size:9px; border:1px solid #ccc; background:#f4f4f4; cursor:pointer; border-radius:2px; }
-    .toggle-btn:hover { background:#e0e0e0; }
-    .result-raw-json { margin-top:8px; padding:8px; background:#f7f7f7; border:1px solid #ddd; border-radius:2px; max-width:100%; overflow-x:auto; }
-    .result-raw-json pre { margin:0; font-size:9px; white-space:pre-wrap; word-break:break-all; overflow-wrap:break-word; }
-    .hidden { display:none !important; }
-    .copy-btn-sm { padding:2px 6px; font-size:9px; border:1px solid #ccc; background:#fff; cursor:pointer; border-radius:2px; }
-    .copy-btn-sm:hover { background:#e0e0e0; }
+    .toc-title {
+      font-weight: 600;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
 
-    /* Raw JSON View Styles */
-    .raw-container { margin-top:20px; padding-top:20px; border-top:2px solid #10b981; max-width:100%; overflow-wrap:break-word; }
-    .raw-item { margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px; background:#fafafa; max-width:100%; overflow-wrap:break-word; }
-    .raw-header { font-weight:700; margin-bottom:8px; color:#2563eb; display:flex; gap:8px; align-items:center; flex-wrap:wrap; word-wrap:break-word; }
-    .raw-response { max-width:100%; overflow-x:auto; }
-    .raw-response pre { background:#f7f7f7; padding:8px; overflow:auto; max-height:400px; font-size:9px; border:1px solid #ddd; border-radius:2px; white-space:pre-wrap; word-break:break-all; margin:0; overflow-wrap:break-word; }
-    .copy-btn { padding:3px 8px; font-size:10px; border:1px solid #ccc; background:#fff; cursor:pointer; border-radius:2px; }
-    .copy-btn:hover { background:#e0e0e0; }
+    .toc-event {
+      padding: 8px 0;
+      border-top: 1px solid var(--line);
+    }
 
-    /* Tutorial Styles */
+    .toc-event:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .toc-event-link {
+      color: var(--link);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .toc-event-link:hover { text-decoration: underline; }
+
+    .toc-queries {
+      margin-left: 12px;
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .toc-query-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 11px;
+      display: inline-block;
+    }
+
+    .toc-query-link:hover { color: var(--link); }
+
+    /* Structured View */
+    .structured-container {
+      margin-top: 4px;
+    }
+
+    .no-data {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    .event-card {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .event-header {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .event-meta {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .query-section {
+      margin-bottom: 10px;
+      padding-left: 12px;
+      border-left: 3px solid var(--line);
+    }
+
+    .query-header {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 13px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--pill);
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .search-btn:hover {
+      background: #dfe1e5;
+      color: var(--text);
+    }
+
+    .query-results {
+      margin-left: 2px;
+    }
+
+    .result-item {
+      padding: 12px 0;
+      display: flex;
+      gap: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .result-item:first-child {
+      border-top: 0;
+    }
+
+    .result-number {
+      font-weight: 600;
+      color: var(--muted);
+      min-width: 18px;
+      text-align: right;
+      padding-top: 2px;
+    }
+
+    .result-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .result-title {
+      font-weight: 400;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .result-title a {
+      color: var(--link);
+      text-decoration: none;
+      font-size: 16px;
+      line-height: 1.3;
+    }
+
+    .result-title a:hover { text-decoration: underline; }
+
+    .result-url {
+      font-size: 12px;
+      color: var(--green);
+      margin-bottom: 4px;
+      word-break: break-all;
+      font-family: var(--font-mono);
+    }
+
+    .result-snippet {
+      font-size: 13px;
+      color: #4d5156;
+      line-height: 1.6;
+      margin-bottom: 4px;
+      white-space: pre-wrap;
+    }
+
+    .result-metadata {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+    }
+
+    .meta-item { display: inline-block; }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .toggle-btn,
+    .copy-btn-sm {
+      padding: 4px 10px;
+      font-size: 11px;
+      border: 1px solid var(--line);
+      background: var(--pill);
+      cursor: pointer;
+      border-radius: 999px;
+      color: var(--muted);
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+
+    .toggle-btn:hover,
+    .copy-btn-sm:hover {
+      background: #dfe1e5;
+      color: var(--text);
+    }
+
+    .result-raw-json {
+      margin-top: 8px;
+      padding: 10px;
+      background: #f1f3f4;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    .result-raw-json pre {
+      margin: 0;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Raw JSON View */
+    .raw-container {
+      margin-top: 26px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .raw-item {
+      margin-bottom: 18px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    .raw-header {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+
+    .copy-btn {
+      padding: 5px 12px;
+      font-size: 11px;
+      border: 1px solid var(--line);
+      background: var(--pill);
+      cursor: pointer;
+      border-radius: 999px;
+      color: var(--muted);
+    }
+
+    .copy-btn:hover { background: #dfe1e5; color: var(--text); }
+
+    .raw-response {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .raw-response pre {
+      background: #f1f3f4;
+      padding: 10px;
+      overflow: auto;
+      max-height: 400px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-family: var(--font-mono);
+      line-height: 1.5;
+    }
+
+    /* Tutorial */
     .tutorial {
-      padding: 16px;
-      margin: 0 0 16px 0;
-      background: #f9fafb;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
+      padding: 14px;
+      margin: 0 0 14px 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
     }
+
     .tutorial-header {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       padding-bottom: 8px;
-      border-bottom: 1px solid #d1d5db;
+      border-bottom: 1px solid var(--line);
     }
+
     .tutorial-header h2 {
       margin: 0;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 700;
-      color: #2563eb;
+      color: var(--text);
     }
+
     .tutorial-steps {
-      margin-top: 12px;
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
     }
+
     .tutorial-step {
-      margin-bottom: 10px;
-      padding: 8px;
+      padding: 8px 10px;
       background: #fff;
-      border-left: 3px solid #2563eb;
+      border: 1px solid var(--line);
+      border-radius: 10px;
     }
-    .tutorial-step:last-child {
-      margin-bottom: 0;
-    }
+
     .step-number {
       font-weight: 700;
-      color: #2563eb;
-      font-size: 10px;
+      color: var(--link);
+      font-size: 12px;
     }
+
     .step-text {
-      font-size: 10px;
-      line-height: 1.4;
-      color: #333;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
       margin-top: 2px;
     }
   </style>
 </head>
 <body>
-  <h1>AI Search Inspector by <a href="https://www.franzai.com" target="_blank" rel="noopener noreferrer" style="color:#111; text-decoration:underline;">Franz Enzenhofer</a></h1>
-  <button id="hard-reload" class="primary">Hard refresh</button>
-  <button id="clear-data" class="primary" style="background:#dc2626; border-color:#b91c1c;">Clear data</button>
-  <button id="copy-all" class="copy-all-btn">Copy All</button>
+  <div class="page">
+    <header class="page-header">
+      <h1>AI Search Inspector</h1>
+      <span class="brand-credit">by <a href="https://www.franzai.com" target="_blank" rel="noopener noreferrer">Franz Enzenhofer</a></span>
+    </header>
 
-  <!-- Tutorial (shown when no results) -->
-  <div id="tutorial" class="tutorial hidden">
-    <div class="tutorial-header">
-      <h2>How to use:</h2>
+    <div class="control-row">
+      <button id="hard-reload" class="primary">Hard refresh</button>
+      <button id="clear-data" class="primary destructive">Clear data</button>
+      <button id="copy-all" class="copy-all-btn">Copy All</button>
     </div>
-    <div class="tutorial-steps">
-      <div class="tutorial-step">
-        <div class="step-number">1. Go to <a href="https://chatgpt.com/" target="_top" style="color:#2563eb; text-decoration:underline;">ChatGPT</a> and ask a question</div>
-        <div class="step-text">Ask something that requires web search</div>
-      </div>
 
-      <div class="tutorial-step">
-        <div class="step-number">2. Wait for ChatGPT to respond</div>
-        <div class="step-text">Let it finish completely</div>
+    <!-- Tutorial (shown when no results) -->
+    <div id="tutorial" class="tutorial hidden">
+      <div class="tutorial-header">
+        <h2>How to use:</h2>
       </div>
+      <div class="tutorial-steps">
+        <div class="tutorial-step">
+          <div class="step-number">1. Go to <a href="https://chatgpt.com/" target="_top">ChatGPT</a> and ask a question</div>
+          <div class="step-text">Ask something that requires web search</div>
+        </div>
 
-      <div class="tutorial-step">
-        <div class="step-number">3. Click "Hard refresh" above</div>
-        <div class="step-text">Reloads ChatGPT and extension is then able to fetch search queries and results</div>
-      </div>
+        <div class="tutorial-step">
+          <div class="step-number">2. Wait for ChatGPT to respond</div>
+          <div class="step-text">Let it finish completely</div>
+        </div>
 
-      <div class="tutorial-step">
-        <div class="step-number">4. View hidden ChatGPT searchs</div>
-        <div class="step-text">Search events, queries, results</div>
+        <div class="tutorial-step">
+          <div class="step-number">3. Click "Hard refresh" above</div>
+          <div class="step-text">Reloads ChatGPT and the extension fetches search queries and results</div>
+        </div>
+
+        <div class="tutorial-step">
+          <div class="step-number">4. View hidden ChatGPT searches</div>
+          <div class="step-text">Search events, queries, and results appear below</div>
+        </div>
       </div>
     </div>
+
+    <div id="toc-container" class="toc-container"></div>
+    <div id="structured-container" class="structured-container" aria-label="Structured search results"></div>
+    <div id="raw-container" class="raw-container" aria-label="Raw JSON responses"></div>
   </div>
-
-  <div id="toc-container" class="toc-container"></div>
-  <div id="structured-container" class="structured-container" aria-label="Structured search results"></div>
-  <div id="raw-container" class="raw-container" aria-label="Raw JSON responses"></div>
   <script type="module" src="panel.js"></script>
 </body>
 </html>

@@ -198,7 +198,7 @@ const renderRawResponses = (events: SearchEvent[]): void => {
   }).join("");
 
   rawContainer.innerHTML = `
-    <h2 id="full-json" style="margin:0 0 16px; font-size:14px; font-weight:700; color:#2563eb;">Full JSON</h2>
+    <h2 id="full-json" class="section-title">Full JSON</h2>
     ${itemsHtml}
   `;
 };
