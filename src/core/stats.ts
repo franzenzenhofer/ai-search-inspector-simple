@@ -11,7 +11,7 @@ const MULTI_PART_TLDS = new Set(["co.uk", "org.uk", "ac.uk", "gov.uk", "me.uk", 
  * Extracts the root domain from a URL, handling multi-part TLDs correctly.
  * e.g., "www.example.co.uk" → "example.co.uk" (not "co.uk")
  */
-const rootDomain = (url: string): string | undefined => {
+export const rootDomain = (url: string): string | undefined => {
   try {
     const host = new URL(url).hostname.toLowerCase();
     const parts = host.split(".").filter(Boolean);
@@ -25,7 +25,7 @@ const rootDomain = (url: string): string | undefined => {
 };
 
 /** Normalize URL by removing tracking query params (utm_source, etc.) for deduplication */
-const normalizeUrl = (url: string): string => {
+export const normalizeUrl = (url: string): string => {
   try {
     const parsed = new URL(url);
     const dominated = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "ref", "trk"];
