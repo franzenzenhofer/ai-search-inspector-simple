@@ -34,6 +34,16 @@ const handleStatToggle = (target: HTMLElement): void => {
   const isHidden = element.classList.contains("hidden");
   element.classList.toggle("hidden");
   target.textContent = isHidden ? "Hide" : "Show";
+  const openAllBtn = target.parentElement?.querySelector<HTMLElement>(".stat-open-all");
+  if (openAllBtn) openAllBtn.classList.toggle("hidden", !isHidden);
+};
+
+const handleOpenAll = (target: HTMLElement): void => {
+  const urlsData = target.getAttribute("data-urls");
+  if (!urlsData) return;
+  const urls = urlsData.split("\n").filter(Boolean);
+  urls.forEach((url) => chrome.tabs.create({ url, active: false }));
+  showToast(`Opening ${urls.length} URLs`);
 };
 
 export const setupDelegation = (): void => {
@@ -42,6 +52,7 @@ export const setupDelegation = (): void => {
     if (target.classList.contains("copy-btn-sm") || target.classList.contains("copy-btn")) void handleCopy(target);
     if (target.classList.contains("toggle-btn")) handleToggle(target);
     if (target.classList.contains("stat-toggle")) handleStatToggle(target);
+    if (target.classList.contains("stat-open-all")) handleOpenAll(target);
     if (target.classList.contains("url-copy")) {
       const text = target.getAttribute("data-copy-text");
       if (text) navigator.clipboard.writeText(text).then(() => showToast("URL copied"));
