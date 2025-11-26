@@ -4,12 +4,39 @@ import { parseSummaryFromJson } from "./parseSummary";
 export type UrlCount = { url: string; count: number };
 export type StatsSnapshot = { events: number; queries: string[]; domains: string[]; urls: UrlCount[] };
 
+/** Common multi-part TLD suffixes that need special handling */
+const MULTI_PART_TLDS = new Set([
+  "co.uk", "org.uk", "ac.uk", "gov.uk", "me.uk", "net.uk", "sch.uk",
+  "com.au", "net.au", "org.au", "edu.au", "gov.au",
+  "co.nz", "org.nz", "net.nz", "govt.nz", "ac.nz",
+  "co.jp", "or.jp", "ne.jp", "ac.jp", "go.jp",
+  "com.br", "org.br", "net.br", "gov.br", "edu.br",
+  "co.in", "org.in", "net.in", "gov.in", "ac.in",
+  "com.mx", "org.mx", "gob.mx", "edu.mx",
+  "co.za", "org.za", "gov.za", "ac.za",
+  "com.cn", "org.cn", "net.cn", "gov.cn", "edu.cn",
+  "co.kr", "or.kr", "ne.kr", "go.kr", "ac.kr",
+  "com.tw", "org.tw", "net.tw", "gov.tw", "edu.tw",
+  "co.il", "org.il", "net.il", "gov.il", "ac.il",
+  "com.sg", "org.sg", "net.sg", "gov.sg", "edu.sg",
+  "com.hk", "org.hk", "net.hk", "gov.hk", "edu.hk",
+  "co.id", "or.id", "go.id", "ac.id", "web.id"
+]);
+
+/**
+ * Extracts the root domain from a URL, handling multi-part TLDs correctly.
+ * e.g., "www.example.co.uk" → "example.co.uk" (not "co.uk")
+ */
 const rootDomain = (url: string): string | undefined => {
   try {
     const host = new URL(url).hostname.toLowerCase();
     const parts = host.split(".").filter(Boolean);
-    if (parts.length >= 2) return `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
-    return host;
+    if (parts.length < 2) return host;
+    const lastTwo = `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
+    if (MULTI_PART_TLDS.has(lastTwo) && parts.length >= 3) {
+      return `${parts[parts.length - 3]}.${lastTwo}`;
+    }
+    return lastTwo;
   } catch { return undefined; }
 };
 
