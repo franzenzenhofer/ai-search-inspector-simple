@@ -234,30 +234,57 @@
       background: #d9e4ff;
     }
 
+    .stat-open-all {
+      padding: 2px 8px;
+      font-size: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--blue);
+      background: var(--blue);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: none;
+      margin-left: 4px;
+    }
+
+    .stat-open-all:hover {
+      background: #0842a0;
+      border-color: #0842a0;
+    }
+
     .stat-urls {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      padding: 8px;
-      margin-top: 6px;
+      list-style: disc;
+      margin: 6px 0 0 0;
+      padding: 8px 8px 8px 24px;
       background: #f8fafc;
       border-radius: 8px;
-      max-height: 200px;
+      max-height: 250px;
       overflow-y: auto;
+    }
+
+    .stat-url-item {
+      margin: 4px 0;
+      line-height: 1.5;
     }
 
     .stat-url {
       font-family: var(--font-mono);
-      font-size: 10px;
-      line-height: 1.4;
-      color: var(--green);
+      font-size: 11px;
+      color: var(--link);
       text-decoration: none;
+      font-weight: 400;
       word-break: break-all;
     }
 
     .stat-url:hover {
-      color: var(--link);
       text-decoration: underline;
+    }
+
+    .stat-url-count {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
     }
 
     /* Table of Contents */
