@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, existsSync } from "fs";
 import { parseSearchEvents, RawCapture } from "../src/core/parseSearchEvent";
 import { buildStats, rootDomain } from "../src/core/stats";
+import { parseSummaryFromJson } from "../src/core/parseSummary";
 
 const JSON_PATH = "./test-data.json";
 
@@ -26,18 +27,48 @@ describe("JSON counts verification (uses actual parsing logic)", () => {
     events.forEach((e, i) => console.log(`  Event ${i + 1}: "${e.query}" with ${e.resultCount} results`));
   });
 
+  it.skipIf(!capture)("TOC results vs unique URLs - explains the count difference", () => {
+    const events = parseSearchEvents(capture!);
+    const stats = buildStats(events);
+
+    // TOC uses parseSummaryFromJson with deduplication (same as structuredView.ts)
+    const rawSummaryEvents = events.flatMap((e) => parseSummaryFromJson(e.rawResponse));
+    const seen = new Set<string>();
+    const summaryEvents = rawSummaryEvents.filter((e) => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
+
+    const tocTotalResults = summaryEvents.reduce((sum, e) =>
+      sum + e.queries.reduce((qsum, q) => qsum + q.results.length, 0), 0);
+    const tocTotalQueries = summaryEvents.reduce((sum, e) =>
+      sum + e.queries.filter((q) => !q.query.toLowerCase().includes("no search query identified")).length, 0);
+
+    // Actual unique URLs from stats
+    const uniqueUrls = stats.urls.length;
+    const totalUrlOccurrences = stats.urls.reduce((sum, u) => sum + u.count, 0);
+
+    console.log("\n=== COUNT ANALYSIS ===");
+    console.log(`TOC shows: ${tocTotalQueries} queries, ${tocTotalResults} results`);
+    console.log(`Stats shows: ${uniqueUrls} unique URLs, ${totalUrlOccurrences} total occurrences`);
+    console.log(`\nBreakdown by SummaryEvent:`);
+    summaryEvents.forEach((e, i) => {
+      const queries = e.queries.length;
+      const resultsPerQuery = e.queries[0]?.results.length ?? 0;
+      console.log(`  Event ${i + 1}: ${queries} queries, ${resultsPerQuery} results`);
+    });
+
+    console.log(`\nExplanation: Results are shown once per event, not duplicated per query.`);
+    console.log(`Stats counts UNIQUE URLs across all results.`);
+  });
+
   it.skipIf(!capture)("buildStats domain count matches URL domain count", () => {
     const events = parseSearchEvents(capture!);
     const stats = buildStats(events);
 
-    // Parse domain counts from stats.domains (format: "domain.com (5x)")
     const domainCounts = new Map<string, number>();
     stats.domains.forEach((d) => {
       const match = d.match(/^(.+) \((\d+)x\)$/);
       if (match) domainCounts.set(match[1], parseInt(match[2], 10));
     });
 
-    // Sum URL counts by domain using the SAME rootDomain function from stats.ts
     const urlDomainCounts = new Map<string, number>();
     stats.urls.forEach(({ url, count }) => {
       const domain = rootDomain(url);
@@ -47,16 +78,10 @@ describe("JSON counts verification (uses actual parsing logic)", () => {
     console.log("\n=== Domain counts (from stats.domains) ===");
     domainCounts.forEach((count, domain) => console.log(`  ${domain}: ${count}x`));
 
-    console.log("\n=== Domain counts (summed from stats.urls) ===");
-    urlDomainCounts.forEach((count, domain) => console.log(`  ${domain}: ${count}x`));
-
-    // Find discrepancies
     const discrepancies: string[] = [];
     domainCounts.forEach((count, domain) => {
       const urlCount = urlDomainCounts.get(domain) ?? 0;
-      if (count !== urlCount) {
-        discrepancies.push(`${domain}: domains=${count}x, urls=${urlCount}x`);
-      }
+      if (count !== urlCount) discrepancies.push(`${domain}: domains=${count}x, urls=${urlCount}x`);
     });
 
     if (discrepancies.length > 0) {

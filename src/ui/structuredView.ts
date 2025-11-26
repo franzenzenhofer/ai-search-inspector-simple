@@ -44,9 +44,14 @@ const renderToc = (evs: SummaryEvent[]): void => {
   setHtml(tocContainer, `<div class="toc-title">Table of Contents (${qPart}${totalR} results)</div>${evs.map(renderTocEvent).join("")}<div class="toc-event"><a href="#full-json" class="toc-event-link">Full JSON</a></div>`);
 };
 
+const dedupeById = (events: SummaryEvent[]): SummaryEvent[] => {
+  const seen = new Set<string>();
+  return events.filter((e) => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
+};
+
 export const renderStructured = (events: SearchEvent[]): void => {
   if (!events.length) { setHtml(structuredContainer, ""); setHtml(tocContainer, ""); return; }
-  const all = events.flatMap((e) => parseSummaryFromJson(e.rawResponse));
+  const all = dedupeById(events.flatMap((e) => parseSummaryFromJson(e.rawResponse)));
   if (!all.length) { setHtml(structuredContainer, `<div class="no-data">No search data found. Reload the ChatGPT tab to re-arm detection.</div>`); setHtml(tocContainer, ""); return; }
   renderToc(all);
   setHtml(structuredContainer, all.map(renderEvent).join(""));
