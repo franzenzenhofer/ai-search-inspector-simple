@@ -35,8 +35,10 @@ const normalizeUrl = (url: string): string => {
   } catch { return url; }
 };
 
+const NO_QUERY_PLACEHOLDER = "no search query identified";
+
 const addEvent = (event: SearchEvent, queries: Set<string>, domains: Map<string, number>, urls: Map<string, number>): void => {
-  if (event.query) queries.add(event.query);
+  if (event.query && event.query !== NO_QUERY_PLACEHOLDER) queries.add(event.query);
   event.results.forEach((result) => {
     if (!result.url) return;
     const normalized = normalizeUrl(result.url);
