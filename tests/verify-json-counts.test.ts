@@ -36,8 +36,8 @@ describe("JSON counts verification (uses actual parsing logic)", () => {
     const seen = new Set<string>();
     const summaryEvents = rawSummaryEvents.filter((e) => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
 
-    const tocTotalResults = summaryEvents.reduce((sum, e) =>
-      sum + e.queries.reduce((qsum, q) => qsum + q.results.length, 0), 0);
+    // TOC counts results once per event (from first query, since all queries share results)
+    const tocTotalResults = summaryEvents.reduce((sum, e) => sum + (e.queries[0]?.results.length ?? 0), 0);
     const tocTotalQueries = summaryEvents.reduce((sum, e) =>
       sum + e.queries.filter((q) => !q.query.toLowerCase().includes("no search query identified")).length, 0);
 
@@ -51,11 +51,11 @@ describe("JSON counts verification (uses actual parsing logic)", () => {
     console.log(`\nBreakdown by SummaryEvent:`);
     summaryEvents.forEach((e, i) => {
       const queries = e.queries.length;
-      const resultsPerQuery = e.queries[0]?.results.length ?? 0;
-      console.log(`  Event ${i + 1}: ${queries} queries, ${resultsPerQuery} results`);
+      const resultsPerEvent = e.queries[0]?.results.length ?? 0;
+      console.log(`  Event ${i + 1}: ${queries} queries, ${resultsPerEvent} results (shared across queries)`);
     });
 
-    console.log(`\nExplanation: Results are shown once per event, not duplicated per query.`);
+    console.log(`\nExplanation: All queries in an event share the same results.`);
     console.log(`Stats counts UNIQUE URLs across all results.`);
   });
 
