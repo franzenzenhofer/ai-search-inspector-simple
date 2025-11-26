@@ -36,8 +36,9 @@ describe("JSON counts verification (uses actual parsing logic)", () => {
     const seen = new Set<string>();
     const summaryEvents = rawSummaryEvents.filter((e) => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
 
-    // TOC counts results once per event (from first query, since all queries share results)
-    const tocTotalResults = summaryEvents.reduce((sum, e) => sum + (e.queries[0]?.results.length ?? 0), 0);
+    // TOC sums results across all queries (results are distributed by ref_index)
+    const tocTotalResults = summaryEvents.reduce((sum, e) =>
+      sum + e.queries.reduce((qsum, q) => qsum + q.results.length, 0), 0);
     const tocTotalQueries = summaryEvents.reduce((sum, e) =>
       sum + e.queries.filter((q) => !q.query.toLowerCase().includes("no search query identified")).length, 0);
 
@@ -50,13 +51,11 @@ describe("JSON counts verification (uses actual parsing logic)", () => {
     console.log(`Stats shows: ${uniqueUrls} unique URLs, ${totalUrlOccurrences} total occurrences`);
     console.log(`\nBreakdown by SummaryEvent:`);
     summaryEvents.forEach((e, i) => {
-      const queries = e.queries.length;
-      const resultsPerEvent = e.queries[0]?.results.length ?? 0;
-      console.log(`  Event ${i + 1}: ${queries} queries, ${resultsPerEvent} results (shared across queries)`);
+      console.log(`  Event ${i + 1}:`);
+      e.queries.forEach((q, qi) => console.log(`    Query ${qi + 1}: "${q.query.substring(0, 40)}..." - ${q.results.length} results`));
     });
 
-    console.log(`\nExplanation: All queries in an event share the same results.`);
-    console.log(`Stats counts UNIQUE URLs across all results.`);
+    console.log(`\nExplanation: Results are distributed to queries by ref_index ranges.`);
   });
 
   it.skipIf(!capture)("buildStats domain count matches URL domain count", () => {
