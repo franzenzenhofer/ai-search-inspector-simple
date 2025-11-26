@@ -1,6 +1,6 @@
-import { Mapping, MappingNode, SummaryEvent, SummaryQuery, SummaryResult } from "./summaryTypes";
+import { Mapping, MappingNode, SummaryEvent, SummaryQuery, SummaryResult, SummaryEventType } from "./summaryTypes";
 import { extractResults } from "./summaryResults";
-import { resolveQueries } from "./summaryQueries";
+import { resolveQueries, detectEventType } from "./summaryQueries";
 
 /** Get ref_index from result's ref_id field */
 const getRefIndex = (result: SummaryResult): number => {
@@ -48,7 +48,9 @@ const toEvent = (node: MappingNode, mapping: Mapping): SummaryEvent | undefined 
   const time = node.message?.create_time;
   const results = extractResults(node.message?.metadata?.search_result_groups);
   if (!results.length || typeof time !== "number") return undefined;
-  return { id: node.message?.id ?? `evt-${time}`, timestamp: time * 1000, queries: buildQueries(node, mapping, results) };
+  const eventType = detectEventType(node, mapping) as SummaryEventType;
+  const turnId = node.message?.metadata?.turn_exchange_id;
+  return { id: node.message?.id ?? `evt-${time}`, timestamp: time * 1000, queries: buildQueries(node, mapping, results), eventType, turnId };
 };
 
 export const mapToEvents = (nodes: MappingNode[], mapping: Mapping): SummaryEvent[] =>

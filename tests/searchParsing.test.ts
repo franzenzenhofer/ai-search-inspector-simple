@@ -19,6 +19,7 @@ describe("parseSearchEvents", () => {
           message: {
             id: "early-id",
             create_time: 2,
+            author: { role: "tool" },
             metadata: { search_model_queries: { queries: ["early query"] }, search_result_groups: [{ entries: [{ type: "search_result", title: "First", url: "https://first.test" }] }] }
           }
         },
@@ -26,6 +27,7 @@ describe("parseSearchEvents", () => {
           message: {
             id: "later-id",
             create_time: 5,
+            author: { role: "tool" },
             metadata: { search_model_queries: { queries: ["late query"] }, search_result_groups: [{ entries: [{ type: "search_result", title: "Second", url: "https://second.test" }] }] }
           }
         }
@@ -41,7 +43,7 @@ describe("parseSearchEvents", () => {
   it("uses fallback message when no query metadata exists", () => {
     const capture = makeCapture({
       mapping: {
-        onlyResults: { message: { id: "no-query", create_time: 3, metadata: { search_result_groups: [{ entries: [{ type: "search_result", title: "Untyped", url: "https://no-query.test" }] }] } } }
+        onlyResults: { message: { id: "no-query", create_time: 3, author: { role: "tool" }, metadata: { search_result_groups: [{ entries: [{ type: "search_result", title: "Untyped", url: "https://no-query.test" }] }] } } }
       }
     });
 

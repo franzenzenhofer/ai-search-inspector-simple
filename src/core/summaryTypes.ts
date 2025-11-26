@@ -11,7 +11,8 @@ export type SummaryResult = {
 
 export type SummaryQuery = { query: string; results: SummaryResult[] };
 
-export type SummaryEvent = { id: string; timestamp: number; queries: SummaryQuery[] };
+export type SummaryEventType = "search" | "follow-up" | "unknown";
+export type SummaryEvent = { id: string; timestamp: number; queries: SummaryQuery[]; eventType?: SummaryEventType; turnId?: string };
 
 export type SearchModelQueries = { queries?: string[] };
 
@@ -33,9 +34,14 @@ export type SummaryMetadata = {
   search_model_queries?: SearchModelQueries;
   search_result_groups?: SummaryResultGroup[];
   search_queries?: SearchQueryItem[];
+  turn_exchange_id?: string;
+  search_display_string?: string;
+  searched_display_string?: string;
 };
 
-export type SummaryMessage = { id?: string; create_time?: number; metadata?: SummaryMetadata };
+export type SummaryAuthor = { role?: string };
+
+export type SummaryMessage = { id?: string; create_time?: number; metadata?: SummaryMetadata; author?: SummaryAuthor };
 
 export type MappingNode = { id: string; message?: SummaryMessage; parent?: string };
 

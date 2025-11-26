@@ -27,13 +27,12 @@ const enqueue = (state: StoreState, task: () => Promise<void>, logError: ErrorLo
   return state.queue;
 };
 
-/** Check if two events are duplicates (same ID, or same query + results + close timestamps) */
+/** Check if two events are duplicates by ID or rawResponse content */
 const isDuplicate = (a: SearchEvent, b: SearchEvent): boolean => {
   if (a.id === b.id) return true;
-  if (!a.query || !b.query || !a.resultCount || !b.resultCount) return false;
-  if (a.query !== b.query || a.resultCount !== b.resultCount) return false;
-  const timeDiff = Math.abs(a.completedAt - b.completedAt);
-  return timeDiff < 60000; // Within 1 minute = likely duplicate
+  // Same rawResponse = same conversation capture = duplicate
+  if (a.rawResponse && b.rawResponse && a.rawResponse === b.rawResponse) return true;
+  return false;
 };
 
 const buildUpsert = (

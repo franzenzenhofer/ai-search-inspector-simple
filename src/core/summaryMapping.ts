@@ -15,9 +15,12 @@ const toMapping = (parsed: unknown): Mapping => {
   return mapping && typeof mapping === "object" ? (mapping as Mapping) : {};
 };
 
+/** Only tool nodes represent actual search events; assistant nodes are response caches */
+const isToolNode = (node: MappingNode): boolean => node.message?.author?.role === "tool";
+
 const sortNodes = (mapping: Mapping): MappingNode[] =>
   Object.values(mapping)
-    .filter((node) => typeof node.message?.create_time === "number")
+    .filter((node) => typeof node.message?.create_time === "number" && isToolNode(node))
     .sort((a, b) => (a.message?.create_time ?? 0) - (b.message?.create_time ?? 0));
 
 export const parseNodes = (rawJson?: string): { mapping: Mapping; nodes: MappingNode[] } => {

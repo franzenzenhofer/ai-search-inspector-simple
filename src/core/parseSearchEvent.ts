@@ -7,10 +7,12 @@
  *
  * This parser extracts events from ALL nodes that have search_result_groups,
  * ensuring we capture every search result ChatGPT retrieved.
+ *
+ * Query resolution uses turn_exchange_id to group related nodes together.
  */
 import { SearchEvent, SearchResult } from "./types";
 import { Mapping, MappingNode } from "./summaryTypes";
-import { resolveQueries } from "./summaryQueries";
+import { resolveQueries, detectEventType } from "./summaryQueries";
 
 export type RawCapture = { url: string; method: string; requestBody?: string; responseBody?: string; status: number; startedAt: number; completedAt: number };
 type ResultEntry = { type?: unknown; title?: unknown; url?: unknown; snippet?: unknown; pub_date?: unknown; attribution?: unknown; ref_id?: unknown };
@@ -21,7 +23,9 @@ const toMapping = (parsed: unknown): Mapping => {
   const mapping = (parsed as { mapping?: unknown }).mapping;
   return mapping && typeof mapping === "object" ? mapping as Mapping : {};
 };
-const sortNodes = (mapping: Mapping): MappingNode[] => Object.values(mapping).filter((node) => typeof node.message?.create_time === "number").sort((a, b) => (a.message?.create_time ?? 0) - (b.message?.create_time ?? 0));
+/** Only tool nodes represent actual search events; assistant nodes are response caches */
+const isToolNode = (node: MappingNode): boolean => node.message?.author?.role === "tool";
+const sortNodes = (mapping: Mapping): MappingNode[] => Object.values(mapping).filter((node) => typeof node.message?.create_time === "number" && isToolNode(node)).sort((a, b) => (a.message?.create_time ?? 0) - (b.message?.create_time ?? 0));
 const resolveQuery = (node: MappingNode, mapping: Mapping): string => resolveQueries(node, mapping).join(", ");
 const toResults = (groups: unknown): SearchResult[] => {
   if (!Array.isArray(groups)) return [];
@@ -44,12 +48,15 @@ const toEvent = (node: MappingNode, capture: RawCapture, mapping: Mapping): Sear
   if (!results.length || typeof time !== "number") return undefined;
   const ms = time * 1000;
   const query = resolveQuery(node, mapping);
-  return { id: node.message?.id ?? `evt-${time}`, query, url: capture.url, method: capture.method, status: capture.status, resultCount: results.length, results, rawResponse: capture.responseBody, startedAt: ms, completedAt: ms };
+  const eventType = detectEventType(node, mapping);
+  const turnId = metadata?.turn_exchange_id;
+  return { id: node.message?.id ?? `evt-${time}`, query, url: capture.url, method: capture.method, status: capture.status, resultCount: results.length, results, rawResponse: capture.responseBody, startedAt: ms, completedAt: ms, eventType, turnId };
 };
 /**
  * Parses ALL search events from a captured ChatGPT response.
  * Iterates through every node in the conversation mapping that has search_result_groups.
  * Returns events sorted by timestamp, each containing all results from that node.
+ * Uses turn_exchange_id to resolve queries within the same user turn.
  */
 export const parseSearchEvents = (capture: RawCapture): SearchEvent[] => {
   const mapping = toMapping(safeJson(capture.responseBody));

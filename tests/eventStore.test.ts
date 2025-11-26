@@ -7,7 +7,7 @@ const makeEvent = (id: string): SearchEvent => ({
   url: "https://chatgpt.com/backend-api/conversation/123",
   method: "GET",
   status: 200,
-  rawResponse: "{}",
+  rawResponse: `{"id":"${id}"}`, // Different rawResponse per event to avoid duplicate detection
   startedAt: Date.now(),
   completedAt: Date.now()
 });

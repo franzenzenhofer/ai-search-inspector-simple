@@ -1,4 +1,5 @@
 export type SearchResult = { title: string; url: string; snippet?: string; pub_date?: number | null; attribution?: string; ref_id?: Record<string, unknown>; type?: string };
+export type SearchEventType = "search" | "follow-up" | "unknown";
 export type SearchEvent = {
   id: string;
   query: string;
@@ -10,6 +11,8 @@ export type SearchEvent = {
   rawResponse?: string;
   startedAt: number;
   completedAt: number;
+  eventType?: SearchEventType;
+  turnId?: string;
 };
 
 export type SearchSummary = {

@@ -1,4 +1,5 @@
-import { parseSummaryFromJson, SummaryEvent, SummaryQuery, SummaryResult } from "../core/parseSummary";
+import { SummaryEvent, SummaryQuery, SummaryResult } from "../core/parseSummary";
+import { parseAndDedupe } from "../core/parseAndDedupe";
 import { SearchEvent } from "../core/types";
 import { byId, escapeHtml, formatDate, setHtml } from "./dom";
 
@@ -23,14 +24,24 @@ const renderQuery = (q: SummaryQuery, ei: number, qi: number): string => {
   return `<div class="query-section" id="query-${ei}-${qi}"><div class="query-header"><strong>${ei + 1}.${qi + 1} Search Query:</strong> ${q.query}${searchLinks(q.query)}</div><div class="query-results">${results}</div></div>`;
 };
 
-const eventMeta = (real: number, total: number, ts: string): string => real === 0 ? `${total} results · ${ts}` : `${real} ${real === 1 ? "query" : "queries"} · ${total} results · ${ts}`;
+const eventTypeLabel = (type?: string): string => {
+  if (type === "follow-up") return `<span class="event-type event-type-followup" title="Follow-up or additional results">Follow-up</span>`;
+  return "";
+};
+
+const eventMeta = (real: number, total: number, ts: string, type?: string): string => {
+  const typeBadge = eventTypeLabel(type);
+  const counts = real === 0 ? `${total} results` : `${real} ${real === 1 ? "query" : "queries"} · ${total} results`;
+  return `${typeBadge} ${counts} · ${ts}`;
+};
 
 const renderEvent = (ev: SummaryEvent, idx: number): string => {
   const total = sumResults(ev.queries), real = countReal(ev.queries), ts = new Date(ev.timestamp).toLocaleString();
-  return `<div class="event-card" id="event-${idx}"><div class="event-header"><strong>Search Event #${idx + 1}</strong><span class="event-meta">${eventMeta(real, total, ts)}</span></div>${ev.queries.map((q, qi) => renderQuery(q, idx, qi)).join("")}</div>`;
+  return `<div class="event-card" id="event-${idx}"><div class="event-header"><strong>Search Event #${idx + 1}</strong><span class="event-meta">${eventMeta(real, total, ts, ev.eventType)}</span></div>${ev.queries.map((q, qi) => renderQuery(q, idx, qi)).join("")}</div>`;
 };
 
-const tocLink = (ei: number, real: number, total: number): string => real === 0 ? `Event #${ei + 1} (${total} results)` : `Event #${ei + 1} (${real} ${real === 1 ? "query" : "queries"}, ${total} results)`;
+const tocLink = (ei: number, real: number, total: number): string =>
+  real === 0 ? `Event #${ei + 1} (${total} results)` : `Event #${ei + 1} (${real} ${real === 1 ? "query" : "queries"}, ${total} results)`;
 
 const renderTocEvent = (ev: SummaryEvent, ei: number): string => {
   const total = sumResults(ev.queries), real = countReal(ev.queries);
@@ -45,14 +56,9 @@ const renderToc = (evs: SummaryEvent[]): void => {
   setHtml(tocContainer, `<div class="toc-title">Table of Contents (${qPart}${totalR} results)</div>${evs.map(renderTocEvent).join("")}<div class="toc-event"><a href="#full-json" class="toc-event-link">Full JSON</a></div>`);
 };
 
-const dedupeById = (events: SummaryEvent[]): SummaryEvent[] => {
-  const seen = new Set<string>();
-  return events.filter((e) => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
-};
-
 export const renderStructured = (events: SearchEvent[]): void => {
   if (!events.length) { setHtml(structuredContainer, ""); setHtml(tocContainer, ""); return; }
-  const all = dedupeById(events.flatMap((e) => parseSummaryFromJson(e.rawResponse)));
+  const all = parseAndDedupe(events);
   if (!all.length) { setHtml(structuredContainer, `<div class="no-data">No search data found. Reload the ChatGPT tab to re-arm detection.</div>`); setHtml(tocContainer, ""); return; }
   renderToc(all);
   setHtml(structuredContainer, all.map(renderEvent).join(""));

@@ -1,65 +1,57 @@
-import { parseSummaryFromJson, SummaryEvent, SummaryQuery, SummaryResult } from "../core/parseSummary";
+import { SummaryEvent, SummaryQuery, SummaryResult } from "../core/parseSummary";
+import { parseAndDedupe } from "../core/parseAndDedupe";
 import { buildStats } from "../core/stats";
 import { SearchEvent } from "../core/types";
 import { formatDate } from "./dom";
 
-const formatResult = (result: SummaryResult, idx: number): string => {
-  const lines = [`${idx + 1}. ${result.title}`, `   URL: ${result.url}`];
-  if (result.snippet) lines.push(`   Snippet: ${result.snippet}`);
-  if (result.attribution) lines.push(`   Source: ${result.attribution}`);
-  if (result.pub_date) lines.push(`   Published: ${formatDate(result.pub_date)}`);
+const formatResult = (r: SummaryResult, i: number): string => {
+  const lines = [`${i + 1}. ${r.title}`, `   URL: ${r.url}`];
+  if (r.snippet) lines.push(`   Snippet: ${r.snippet}`);
+  if (r.attribution) lines.push(`   Source: ${r.attribution}`);
+  if (r.pub_date) lines.push(`   Published: ${formatDate(r.pub_date)}`);
   return lines.join("\n");
 };
 
-const formatQuery = (eventIdx: number, query: SummaryQuery, idx: number): string => {
-  const header = `${eventIdx + 1}.${idx + 1} Search Query: ${query.query}\n${query.results.length} results`;
-  const results = query.results.map((result, resultIdx) => formatResult(result, resultIdx)).join("\n");
-  return results ? `${header}\n${results}` : header;
+const formatQuery = (ei: number, q: SummaryQuery, qi: number): string => {
+  const h = `${ei + 1}.${qi + 1} Search Query: ${q.query}\n${q.results.length} results`;
+  const r = q.results.map((res, ri) => formatResult(res, ri)).join("\n");
+  return r ? `${h}\n${r}` : h;
 };
 
-const formatEvent = (summaryEvent: SummaryEvent, idx: number): string => {
-  const header = `Search Event #${idx + 1}\n${new Date(summaryEvent.timestamp).toLocaleString()}\n${"=".repeat(80)}`;
-  const queries = summaryEvent.queries.map((query, queryIdx) => formatQuery(idx, query, queryIdx)).join("\n");
-  return `${header}\n${queries}`;
+const formatEvent = (ev: SummaryEvent, i: number): string => {
+  const h = `Search Event #${i + 1}\n${new Date(ev.timestamp).toLocaleString()}\n${"=".repeat(80)}`;
+  return `${h}\n${ev.queries.map((q, qi) => formatQuery(i, q, qi)).join("\n")}`;
 };
 
-const buildSummaryText = (events: SearchEvent[]): string => {
-  const summaries = events.flatMap((event) => parseSummaryFromJson(event.rawResponse));
-  return summaries.map((summary, idx) => formatEvent(summary, idx)).join(`\n\n${"=".repeat(80)}\n\n`);
+const buildSummary = (events: SearchEvent[]): string => {
+  const all = parseAndDedupe(events);
+  return all.map((s, i) => formatEvent(s, i)).join(`\n\n${"=".repeat(80)}\n\n`);
 };
 
-const buildTocText = (events: SearchEvent[]): string => {
-  const summaries = events.flatMap((event) => parseSummaryFromJson(event.rawResponse));
-  const lines = summaries.map((summary, idx) => {
-    const resultsCount = summary.queries.reduce((sum, q) => sum + q.results.length, 0);
-    const header = `Event #${idx + 1} (${summary.queries.length} queries, ${resultsCount} results)`;
-    const queries = summary.queries.map((query, qIdx) => `${idx + 1}.${qIdx + 1} ${query.query} (${query.results.length})`).join("\n");
-    return `${header}\n${queries}`;
+const buildToc = (events: SearchEvent[]): string => {
+  const all = parseAndDedupe(events);
+  const totalQ = all.reduce((s, e) => s + e.queries.length, 0);
+  const totalR = all.reduce((s, e) => s + e.queries.reduce((sum, q) => sum + q.results.length, 0), 0);
+  const lines = all.map((s, i) => {
+    const cnt = s.queries.reduce((sum, q) => sum + q.results.length, 0);
+    const qs = s.queries.map((q, qi) => `${i + 1}.${qi + 1} ${q.query} (${q.results.length})`).join("\n");
+    return `Event #${i + 1} (${s.queries.length} queries, ${cnt} results)\n${qs}`;
   });
-  return `Table of Contents\n${lines.join("\n")}`;
+  return `TABLE OF CONTENTS (${totalQ} QUERIES, ${totalR} RESULTS)\n${lines.join("\n")}`;
 };
 
 const buildStatsText = (events: SearchEvent[]): string => {
-  const stats = buildStats(events);
-  const queries = stats.queries.join(", ") || "none";
-  const domains = stats.domains.join(", ") || "none";
-  const urls = stats.urls.join(", ") || "none";
-  return [
-    "Stats",
-    `- Search events: ${stats.events}`,
-    `- Unique queries: ${stats.queries.length} (${queries})`,
-    `- Unique domains: ${stats.domains.length} (${domains})`,
-    `- Unique URLs: ${stats.urls.length} (${urls})`
-  ].join("\n");
+  const s = buildStats(events);
+  const urls = s.urls.map((u) => `${u.url} (${u.count}x)`).join(", ") || "none";
+  return `Stats\n- Search events: ${s.events}\n- Unique queries: ${s.queries.length} (${s.queries.join(", ") || "none"})\n- Unique domains: ${s.domains.length} (${s.domains.join(", ") || "none"})\n- Unique URLs: ${s.urls.length} (${urls})`;
+};
+
+const buildRawJson = (events: SearchEvent[]): string => {
+  const jsons = events.map((e, i) => `=== RAW JSON Event #${i + 1} ===\n${e.rawResponse ?? "No data"}`);
+  return `FULL JSON DATA\n${"=".repeat(80)}\n${jsons.join("\n\n")}`;
 };
 
 export const copyAllSummaries = async (events: SearchEvent[]): Promise<void> => {
   const memo = "# This report was created by AI Search Inspector by Franz Enzenhofer - www.franzai.com - Specialist for SEO, GEO and AI SEO in Vienna, Austria";
-  const text = [
-    buildStatsText(events),
-    buildTocText(events),
-    buildSummaryText(events),
-    memo
-  ].join("\n\n");
-  await navigator.clipboard.writeText(text);
+  await navigator.clipboard.writeText([buildToc(events), buildStatsText(events), buildSummary(events), buildRawJson(events), memo].join("\n\n"));
 };
