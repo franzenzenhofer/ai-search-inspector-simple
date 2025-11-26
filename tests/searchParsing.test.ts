@@ -38,7 +38,7 @@ describe("parseSearchEvents", () => {
     expect(events[1].results[0].title).toBe("Second");
   });
 
-  it("uses an unknown query placeholder when no query metadata exists", () => {
+  it("uses fallback message when no query metadata exists", () => {
     const capture = makeCapture({
       mapping: {
         onlyResults: { message: { id: "no-query", create_time: 3, metadata: { search_result_groups: [{ entries: [{ type: "search_result", title: "Untyped", url: "https://no-query.test" }] }] } } }
@@ -47,7 +47,7 @@ describe("parseSearchEvents", () => {
 
     const events = parseSearchEvents(capture);
     expect(events).toHaveLength(1);
-    expect(events[0].query).toBe("<unknown query>");
+    expect(events[0].query).toBe("no search query identified");
     expect(events[0].results[0].url).toBe("https://no-query.test");
   });
 });
