@@ -7,7 +7,8 @@ const tocContainer = byId<HTMLDivElement>("toc-container");
 
 const isNoQuery = (q: string): boolean => q.toLowerCase().includes("no search query identified");
 const countReal = (qs: SummaryQuery[]): number => qs.filter((q) => !isNoQuery(q.query)).length;
-const sumResults = (qs: SummaryQuery[]): number => qs.reduce((s, q) => s + q.results.length, 0);
+/** Count results once per event (all queries share the same results) */
+const sumResults = (qs: SummaryQuery[]): number => qs[0]?.results.length ?? 0;
 
 const renderResult = (r: SummaryResult, ids: { e: number; q: number; r: number }): string => {
   const copy = `${r.title}\n${r.url}${r.snippet ? `\n${r.snippet}` : ""}`, tid = `raw-${ids.e}-${ids.q}-${ids.r}`;

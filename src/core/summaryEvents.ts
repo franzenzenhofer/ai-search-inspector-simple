@@ -2,9 +2,9 @@ import { Mapping, MappingNode, SummaryEvent, SummaryQuery, SummaryResult } from 
 import { extractResults } from "./summaryResults";
 import { resolveQueries } from "./summaryQueries";
 
-/** Attach results only to first query - ChatGPT doesn't map results to specific queries */
+/** Attach all results to each query - ChatGPT runs multiple queries and pools results */
 const buildQueries = (node: MappingNode, mapping: Mapping, results: SummaryResult[]): SummaryQuery[] =>
-  resolveQueries(node, mapping).map((query, i) => ({ query, results: i === 0 ? results : [] }));
+  resolveQueries(node, mapping).map((query) => ({ query, results }));
 
 const toEvent = (node: MappingNode, mapping: Mapping): SummaryEvent | undefined => {
   const time = node.message?.create_time;
