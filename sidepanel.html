@@ -217,6 +217,12 @@
       background: var(--pill);
       padding: 3px 8px;
       border-radius: 12px;
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+
+    .stat-domain:hover {
+      background: #d9e4ff;
     }
 
     .stat-toggle {
@@ -659,6 +665,116 @@
 
     .step-number { font-weight: 800; color: var(--link); font-size: 12px; }
     .step-text { font-size: 12px; line-height: 1.5; color: var(--text); margin-top: 2px; }
+
+    /* Domain Overlay */
+    .domain-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 150ms ease;
+    }
+
+    .domain-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .overlay-content {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+      max-width: 90%;
+      max-height: 80%;
+      width: 500px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .overlay-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--pill);
+    }
+
+    .overlay-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .overlay-close {
+      background: transparent;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: var(--muted);
+      box-shadow: none;
+    }
+
+    .overlay-close:hover {
+      background: #d9e4ff;
+      color: var(--text);
+    }
+
+    .overlay-urls {
+      list-style: disc;
+      margin: 0;
+      padding: 12px 12px 12px 28px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .overlay-url-item {
+      margin: 6px 0;
+      line-height: 1.5;
+    }
+
+    .overlay-url-item a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--link);
+      word-break: break-all;
+    }
+
+    .overlay-url-count {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .overlay-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .overlay-copy {
+      padding: 6px 14px;
+      font-size: 12px;
+      background: var(--blue);
+      color: #fff;
+      border: 1px solid var(--blue);
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .overlay-copy:hover {
+      background: #0842a0;
+      border-color: #0842a0;
+    }
   </style>
 </head>
 <body>

@@ -3,6 +3,9 @@ import { SearchEvent } from "../core/types";
 import { byId, setHtml, escapeHtml } from "./dom";
 
 const statsContainer = byId<HTMLDivElement>("stats-container");
+let currentUrls: UrlCount[] = [];
+
+export const getStatsUrls = (): UrlCount[] => currentUrls;
 
 const formatStatsForCopy = (stats: StatsSnapshot): string => [
   `Search events: ${stats.events}`,
@@ -26,9 +29,14 @@ const renderQueries = (queries: string[]): string => {
   return `<div class="stat-item stat-item-block"><span class="stat-label">Unique queries <span class="stat-count">${queries.length}</span></span><div class="stat-queries">${list}</div></div>`;
 };
 
+const extractDomainName = (domainWithCount: string): string => {
+  const match = domainWithCount.match(/^(.+) \(\d+x\)$/);
+  return match ? match[1] : domainWithCount;
+};
+
 const renderDomains = (domains: string[]): string => {
   if (!domains.length) return statItemWithBadge("Unique domains", 0);
-  const list = domains.map((d) => `<span class="stat-domain">${escapeHtml(d)}</span>`).join("");
+  const list = domains.map((d) => `<span class="stat-domain" data-domain="${escapeHtml(extractDomainName(d))}">${escapeHtml(d)}</span>`).join("");
   return `<div class="stat-item stat-item-block"><span class="stat-label">Unique domains <span class="stat-count">${domains.length}</span></span><div class="stat-domains">${list}</div></div>`;
 };
 
@@ -46,7 +54,9 @@ const buildStatsHtml = (stats: StatsSnapshot): string =>
   `${renderHeader(formatStatsForCopy(stats))}${statItemWithBadge("Search events", stats.events)}${renderQueries(stats.queries)}${renderDomains(stats.domains)}${renderUrls(stats.urls)}`;
 
 export const renderStats = (events: SearchEvent[]): void => {
-  if (!events.length) { setHtml(statsContainer, ""); statsContainer.classList.add("hidden"); return; }
+  if (!events.length) { currentUrls = []; setHtml(statsContainer, ""); statsContainer.classList.add("hidden"); return; }
   statsContainer.classList.remove("hidden");
-  setHtml(statsContainer, buildStatsHtml(buildStats(events)));
+  const stats = buildStats(events);
+  currentUrls = stats.urls;
+  setHtml(statsContainer, buildStatsHtml(stats));
 };
