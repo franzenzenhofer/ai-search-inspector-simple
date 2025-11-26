@@ -1,4 +1,4 @@
-import { parseSearchEvent, RawCapture } from "../core/parseSearchEvent";
+import { parseSearchEvents, RawCapture } from "../core/parseSearchEvent";
 import { SearchEvent } from "../core/types";
 
 const toCapture = (details: chrome.webRequest.WebResponseCacheDetails): RawCapture => ({
@@ -11,9 +11,10 @@ const toCapture = (details: chrome.webRequest.WebResponseCacheDetails): RawCaptu
   completedAt: Math.floor(details.timeStamp)
 });
 
+/** Parse all search events from the response and notify callback for each */
 const handleComplete = (details: chrome.webRequest.WebResponseCacheDetails, onEvent: (event: SearchEvent) => void): void => {
-  const event = parseSearchEvent(toCapture(details));
-  if (event) onEvent(event);
+  const events = parseSearchEvents(toCapture(details));
+  events.forEach((event) => onEvent(event));
 };
 
 export const effectInitWebRequestTap = (onEvent: (event: SearchEvent) => void): void => {

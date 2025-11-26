@@ -1,27 +1,28 @@
+/**
+ * Parses ChatGPT conversation JSON to extract ALL search events.
+ *
+ * ChatGPT stores search results in multiple locations within the conversation mapping:
+ * 1. Tool response nodes (web.run) - contains search_result_groups with results
+ * 2. Assistant response nodes - may contain additional/processed search_result_groups
+ *
+ * This parser extracts events from ALL nodes that have search_result_groups,
+ * ensuring we capture every search result ChatGPT retrieved.
+ */
 import { SearchEvent, SearchResult } from "./types";
+import { Mapping, MappingNode } from "./summaryTypes";
+import { resolveQueries } from "./summaryQueries";
 
 export type RawCapture = { url: string; method: string; requestBody?: string; responseBody?: string; status: number; startedAt: number; completedAt: number };
-type MappingNode = { id?: string; parent?: string; message?: { id?: string; create_time?: number; metadata?: Record<string, unknown> } };
 type ResultEntry = { type?: unknown; title?: unknown; url?: unknown; snippet?: unknown; pub_date?: unknown; attribution?: unknown; ref_id?: unknown };
 
 const safeJson = (text?: string): unknown => { if (!text) return undefined; try { return JSON.parse(text); } catch { return undefined; } };
-const toMapping = (parsed: unknown): Record<string, MappingNode> => {
+const toMapping = (parsed: unknown): Mapping => {
   if (!parsed || typeof parsed !== "object") return {};
   const mapping = (parsed as { mapping?: unknown }).mapping;
-  return mapping && typeof mapping === "object" ? mapping as Record<string, MappingNode> : {};
+  return mapping && typeof mapping === "object" ? mapping as Mapping : {};
 };
-const sortNodes = (mapping: Record<string, MappingNode>): MappingNode[] => Object.values(mapping).filter((node) => typeof node.message?.create_time === "number").sort((a, b) => (a.message?.create_time ?? 0) - (b.message?.create_time ?? 0));
-const readQueries = (meta?: Record<string, unknown>): string[] => {
-  const queries = (meta?.search_model_queries as { queries?: unknown } | undefined)?.queries;
-  return Array.isArray(queries) ? queries.filter((q): q is string => typeof q === "string" && q.length > 0) : [];
-};
-const resolveQuery = (node: MappingNode, mapping: Record<string, MappingNode>): string => {
-  const fromNode = readQueries(node.message?.metadata);
-  if (fromNode.length) return fromNode.join(", ");
-  const parentMeta = node.parent ? mapping[node.parent]?.message?.metadata : undefined;
-  const fromParent = readQueries(parentMeta);
-  return fromParent.length ? fromParent.join(", ") : "<unknown query>";
-};
+const sortNodes = (mapping: Mapping): MappingNode[] => Object.values(mapping).filter((node) => typeof node.message?.create_time === "number").sort((a, b) => (a.message?.create_time ?? 0) - (b.message?.create_time ?? 0));
+const resolveQuery = (node: MappingNode, mapping: Mapping): string => resolveQueries(node, mapping).join(", ");
 const toResults = (groups: unknown): SearchResult[] => {
   if (!Array.isArray(groups)) return [];
   return groups.flatMap((groupRaw) => {
@@ -36,8 +37,8 @@ const toResults = (groups: unknown): SearchResult[] => {
     });
   });
 };
-const toEvent = (node: MappingNode, capture: RawCapture, mapping: Record<string, MappingNode>): SearchEvent | undefined => {
-  const metadata = node.message?.metadata as Record<string, unknown> | undefined;
+const toEvent = (node: MappingNode, capture: RawCapture, mapping: Mapping): SearchEvent | undefined => {
+  const metadata = node.message?.metadata;
   const results = toResults(metadata?.search_result_groups);
   const time = node.message?.create_time;
   if (!results.length || typeof time !== "number") return undefined;
@@ -45,8 +46,15 @@ const toEvent = (node: MappingNode, capture: RawCapture, mapping: Record<string,
   const query = resolveQuery(node, mapping);
   return { id: node.message?.id ?? `evt-${time}`, query, url: capture.url, method: capture.method, status: capture.status, resultCount: results.length, results, rawResponse: capture.responseBody, startedAt: ms, completedAt: ms };
 };
+/**
+ * Parses ALL search events from a captured ChatGPT response.
+ * Iterates through every node in the conversation mapping that has search_result_groups.
+ * Returns events sorted by timestamp, each containing all results from that node.
+ */
 export const parseSearchEvents = (capture: RawCapture): SearchEvent[] => {
   const mapping = toMapping(safeJson(capture.responseBody));
   return sortNodes(mapping).map((node) => toEvent(node, capture, mapping)).filter((event): event is SearchEvent => Boolean(event));
 };
+
+/** @deprecated Use parseSearchEvents to capture ALL events, not just the first */
 export const parseSearchEvent = (capture: RawCapture): SearchEvent | undefined => parseSearchEvents(capture)[0];
