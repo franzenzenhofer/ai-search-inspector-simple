@@ -8,20 +8,36 @@ const getRefIndex = (result: SummaryResult): number => {
   return typeof refId?.ref_index === "number" ? refId.ref_index : 999;
 };
 
-/** Distribute results to queries based on ref_index ranges */
+/** Find natural boundaries using gaps in ref_index sequence */
+const findBoundaries = (indices: number[], numQueries: number): number[] => {
+  if (numQueries <= 1 || indices.length === 0) return [];
+  const sorted = [...indices].sort((a, b) => a - b);
+  const gaps: { boundary: number; gap: number }[] = [];
+  for (let i = 1; i < sorted.length; i++) {
+    gaps.push({ boundary: Math.floor((sorted[i - 1] + sorted[i]) / 2), gap: sorted[i] - sorted[i - 1] });
+  }
+  gaps.sort((a, b) => b.gap - a.gap);
+  return gaps.slice(0, numQueries - 1).map((g) => g.boundary).sort((a, b) => a - b);
+};
+
+/** Distribute results to queries using gap-based boundaries */
 const distributeResults = (queries: string[], results: SummaryResult[]): SummaryResult[][] => {
   if (queries.length <= 1) return [results];
-  const maxIdx = Math.max(...results.map(getRefIndex).filter((i) => i < 999), 0);
-  const rangePerQuery = Math.ceil((maxIdx + 1) / queries.length);
+  const indices = results.map(getRefIndex).filter((i) => i < 999);
+  const boundaries = findBoundaries(indices, queries.length);
   const buckets: SummaryResult[][] = queries.map(() => []);
   results.forEach((r) => {
-    const idx = Math.min(Math.floor(getRefIndex(r) / rangePerQuery), queries.length - 1);
-    buckets[idx].push(r);
+    const idx = getRefIndex(r);
+    let bucket = 0;
+    for (let i = 0; i < boundaries.length; i++) {
+      if (idx > boundaries[i]) bucket = i + 1;
+    }
+    buckets[Math.min(bucket, queries.length - 1)].push(r);
   });
   return buckets;
 };
 
-/** Build queries with results distributed by ref_index */
+/** Build queries with results distributed by ref_index gaps */
 const buildQueries = (node: MappingNode, mapping: Mapping, results: SummaryResult[]): SummaryQuery[] => {
   const queries = resolveQueries(node, mapping);
   const distributed = distributeResults(queries, results);
