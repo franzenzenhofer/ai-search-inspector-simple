@@ -39,7 +39,7 @@ const renderUrls = (urls: UrlCount[]): string => {
   if (!urls.length) return statItemWithBadge("Unique URLs", 0);
   const allUrls = urls.map((u) => u.url).join("\n");
   const list = urls.map(renderUrlItem).join("");
-  return `<div class="stat-item stat-item-block"><span class="stat-label">Unique URLs <span class="stat-count">${urls.length}</span><button class="stat-toggle" data-toggle-target="urls-list">Show</button><button class="stat-open-all hidden" data-urls="${escapeHtml(allUrls)}">Open All</button></span><ul id="urls-list" class="stat-urls hidden">${list}</ul></div>`;
+  return `<div class="stat-item stat-item-block"><span class="stat-label">Unique URLs <span class="stat-count">${urls.length}</span><button class="stat-toggle" data-toggle-target="urls-list">Hide</button><button class="stat-open-all" data-urls="${escapeHtml(allUrls)}">Open All</button></span><ul id="urls-list" class="stat-urls">${list}</ul></div>`;
 };
 
 const buildStatsHtml = (stats: StatsSnapshot): string =>
