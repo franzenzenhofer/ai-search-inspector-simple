@@ -259,7 +259,25 @@
       background: #f8fafc;
       border-radius: 8px;
       max-height: 250px;
-      overflow-y: auto;
+      overflow-y: scroll;
+    }
+
+    .stat-urls::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .stat-urls::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 4px;
+    }
+
+    .stat-urls::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 4px;
+    }
+
+    .stat-urls::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
     }
 
     .stat-url-item {
