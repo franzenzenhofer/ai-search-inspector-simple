@@ -8,6 +8,8 @@ A Chrome extension that inspects and displays **ChatGPT** outbound search querie
 
 ## Quick Install (Developer Mode)
 
+![Quick Install Guide](./install-guide.png)
+
 1. Download and extract [latest-build.zip](./latest-build.zip)
 2. Go to `chrome://extensions/` in Chrome
 3. Enable **Developer mode** (toggle in top-right)
