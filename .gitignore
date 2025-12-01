@@ -4,3 +4,18 @@ src/buildInfo.ts
 .DS_Store
 *.har
 har-file-examples/
+
+# Prevent accidental API key commits
+.env
+.env.*
+*.pem
+*.key
+secrets.json
+credentials.json
+
+# Python virtual environments
+venv/
+__pycache__/
+
+# Dump/test files that may contain sensitive data
+*dump*.md

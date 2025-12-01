@@ -4,6 +4,18 @@ A Chrome extension that inspects and displays **ChatGPT** outbound search querie
 
 > **Currently supports:** ChatGPT (chat.openai.com and chatgpt.com)
 
+---
+
+## Quick Install (Developer Mode)
+
+1. Download and extract [latest-build.zip](./latest-build.zip)
+2. Go to `chrome://extensions/` in Chrome
+3. Enable **Developer mode** (toggle in top-right)
+4. Click **Load unpacked** → select the extracted folder
+5. Done! Click the extension icon and open ChatGPT to start inspecting
+
+---
+
 ## Features
 
 - **Real-time Search Monitoring**: Automatically captures all search queries made by ChatGPT
