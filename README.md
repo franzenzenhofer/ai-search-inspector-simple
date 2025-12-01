@@ -8,7 +8,7 @@ A Chrome extension that inspects and displays **ChatGPT** outbound search querie
 
 ## Quick Install (Developer Mode)
 
-1. **Download [latest-build.zip](./latest-build.zip)** (click this link directly!)
+1. **Download [latest-build.zip](https://github.com/franzenzenhofer/ai-search-inspector-simple/raw/main/latest-build.zip)** (click to download directly!)
 
    > **IMPORTANT:** Download the `latest-build.zip` file linked above. Do NOT use GitHub's green "Code → Download ZIP" button - that downloads source code, not the ready-to-install extension!
 
@@ -36,7 +36,7 @@ A Chrome extension that inspects and displays **ChatGPT** outbound search querie
 ### Option 1: Install from Pre-built ZIP (Recommended)
 
 1. **Download the Extension**
-   - Click to download [latest-build.zip](./latest-build.zip) directly
+   - Click to download [latest-build.zip](https://github.com/franzenzenhofer/ai-search-inspector-simple/raw/main/latest-build.zip) directly
    - **IMPORTANT:** Do NOT use GitHub's green "Code → Download ZIP" button! That downloads source code. You need the `latest-build.zip` file linked here.
    - Extract the ZIP file to a location on your computer
 
