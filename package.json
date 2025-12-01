@@ -7,7 +7,7 @@
     "clean": "rm -rf dist",
     "clean:zip": "rm -f latest-build.zip",
     "build:sw": "esbuild src/infra/effectServiceWorker.ts --bundle --outfile=dist/serviceWorker.js --platform=browser --target=chrome115 --format=esm",
-    "build:content": "esbuild src/infra/effectContentWatcher.ts --bundle --outfile=dist/content.js --platform=browser --target=chrome115 --format=esm",
+    "build:content": "esbuild src/infra/effectContentWatcher.ts --bundle --outfile=dist/content.js --platform=browser --target=chrome115 --format=iife",
     "build:panel": "esbuild src/ui/panel.ts --bundle --outfile=dist/panel.js --platform=browser --target=chrome115 --format=esm",
     "copy": "cp manifest.json dist/ && cp sidepanel.html dist/ && cp icon16.png icon32.png icon48.png icon128.png dist/",
     "zip": "cd dist && zip -r ../latest-build.zip . && cd ..",
@@ -17,12 +17,13 @@
     "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/chrome": "^0.0.274",
     "@types/node": "^22.9.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "esbuild": "^0.23.0",
     "eslint": "^8.57.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
     "typescript": "^5.4.5",
     "vitest": "^1.3.1"
   }
